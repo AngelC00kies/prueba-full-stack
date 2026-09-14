@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PruebaTecnica.Domain.Entities;
+﻿namespace PruebaTecnica.Domain.Entities;
 
 public class Venta
 {
     public int Id { get; set; }
-    public DateTime Fecha { get; set; } = DateTime.Now;
+    public DateTime Fecha { get; set; } = DateTime.UtcNow;
     public int IdCliente { get; set; }
     public Cliente? Cliente { get; set; }
-    public List<DetalleVenta> Detalles { get; set; } = new();
-    public decimal Total => Detalles.Sum(d => d.Cantidad * d.PrecioUnitario);
+    public decimal Total { get; set; }                              // ← con set
+    public ICollection<DetalleVenta> Detalles { get; set; } = new List<DetalleVenta>();
 }
