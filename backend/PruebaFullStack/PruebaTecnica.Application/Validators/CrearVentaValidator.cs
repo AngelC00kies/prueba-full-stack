@@ -19,7 +19,7 @@ public class CrearVentaValidator : AbstractValidator<CrearVentaDto>
     public CrearVentaValidator()
     {
         // Valida que se haya seleccionado un cliente válido.
-        RuleFor(x => x.Id)
+        RuleFor(x => x.IdCliente)
             .GreaterThan(0).WithMessage("Debe seleccionar un cliente");
 
         // Valida que la venta contenga al menos un producto.
@@ -30,7 +30,7 @@ public class CrearVentaValidator : AbstractValidator<CrearVentaDto>
         RuleForEach(x => x.Detalles).ChildRules(detalle =>
         {
             // Verifica que el identificador del producto sea válido.
-            detalle.RuleFor(d => d.Id)
+            detalle.RuleFor(d => d.IdProducto)
                 .GreaterThan(0).WithMessage("Producto inválido");
 
             // Verifica que la cantidad solicitada sea mayor que cero.

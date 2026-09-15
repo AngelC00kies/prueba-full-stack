@@ -12,7 +12,7 @@ public class CrearVentaDto
     /// Identificador del cliente que realiza la compra.
     /// Se utiliza para asociar la venta con un cliente existente.
     /// </summary>
-    public int Id { get; set; }
+    public int IdCliente { get; set; }
 
     /// <summary>
     /// Colección de productos incluidos en la venta.
@@ -32,7 +32,7 @@ public class CrearDetalleVentaDto
     /// Identificador del producto que se incluirá en la venta.
     /// Debe corresponder a un producto existente en el sistema.
     /// </summary>
-    public int Id { get; set; }
+    public int IdProducto { get; set; }
 
     /// <summary>
     /// Cantidad de unidades del producto que serán vendidas.

@@ -32,15 +32,9 @@ public class VentaService : IVentaService
     /// <summary>
     /// Inicializa una nueva instancia del servicio de ventas.
     /// </summary>
-    /// <param name="ventaRepository">
-    /// Repositorio de ventas.
-    /// </param>
-    /// <param name="productoRepository">
-    /// Repositorio de productos.
-    /// </param>
-    /// <param name="clienteRepository">
-    /// Repositorio de clientes.
-    /// </param>
+    /// <param name="ventaRepository">Repositorio de ventas.</param>
+    /// <param name="productoRepository">Repositorio de productos.</param>
+    /// <param name="clienteRepository">Repositorio de clientes.</param>
     public VentaService(
         IVentaRepository ventaRepository,
         IProductoRepository productoRepository,
@@ -55,9 +49,7 @@ public class VentaService : IVentaService
     /// Obtiene todas las ventas registradas en el sistema.
     /// Convierte las entidades de dominio en objetos DTO para su exposición.
     /// </summary>
-    /// <returns>
-    /// Resultado con la colección de ventas encontradas.
-    /// </returns>
+    /// <returns>Resultado con la colección de ventas encontradas.</returns>
     public async Task<Result<IEnumerable<VentaDto>>> ObtenerTodasAsync()
     {
         // Obtiene todas las ventas desde el repositorio.
@@ -86,12 +78,8 @@ public class VentaService : IVentaService
     /// <summary>
     /// Obtiene una venta específica a partir de su identificador.
     /// </summary>
-    /// <param name="id">
-    /// Identificador único de la venta.
-    /// </param>
-    /// <returns>
-    /// Resultado con la información de la venta encontrada.
-    /// </returns>
+    /// <param name="id">Identificador único de la venta.</param>
+    /// <returns>Resultado con la información de la venta encontrada.</returns>
     public async Task<Result<VentaDto>> ObtenerPorIdAsync(int id)
     {
         // Busca la venta por su identificador.
@@ -125,19 +113,15 @@ public class VentaService : IVentaService
     /// verifica disponibilidad de inventario,
     /// calcula el total de la venta y actualiza el stock.
     /// </summary>
-    /// <param name="dto">
-    /// Datos necesarios para crear una nueva venta.
-    /// </param>
-    /// <returns>
-    /// Resultado que contiene la información de la venta registrada.
-    /// </returns>
+    /// <param name="dto">Datos necesarios para crear una nueva venta.</param>
+    /// <returns>Resultado que contiene la información de la venta registrada.</returns>
     public async Task<Result<VentaDto>> CrearAsync(CrearVentaDto dto)
     {
         // Validar cliente.
-        var cliente = await _clienteRepository.ObtenerPorIdAsync(dto.Id);
+        var cliente = await _clienteRepository.ObtenerPorIdAsync(dto.IdCliente);
 
         if (cliente is null)
-            return Result<VentaDto>.Fail($"Cliente con id {dto.Id} no encontrado");
+            return Result<VentaDto>.Fail($"Cliente con id {dto.IdCliente} no encontrado");
 
         // Verificar que la venta contenga al menos un producto.
         if (dto.Detalles.Count == 0)
@@ -146,6 +130,10 @@ public class VentaService : IVentaService
         // Lista donde se almacenarán los detalles de la venta.
         var detalles = new List<DetalleVenta>();
 
+        // Diccionario para guardar el nombre de cada producto por su id,
+        // y así reutilizarlo al construir la respuesta sin consultar la BD de nuevo.
+        var nombresProductos = new Dictionary<int, string>();
+
         // Acumulador para calcular el total de la venta.
         decimal total = 0;
 
@@ -153,11 +141,11 @@ public class VentaService : IVentaService
         foreach (var item in dto.Detalles)
         {
             // Busca el producto solicitado.
-            var producto = await _productoRepository.ObtenerPorIdAsync(item.Id);
+            var producto = await _productoRepository.ObtenerPorIdAsync(item.IdProducto);
 
             // Verifica que el producto exista.
             if (producto is null)
-                return Result<VentaDto>.Fail($"Producto con id {item.Id} no encontrado");
+                return Result<VentaDto>.Fail($"Producto con id {item.IdProducto} no encontrado");
 
             // Valida que exista suficiente inventario.
             if (producto.Stock < item.Cantidad)
@@ -171,6 +159,9 @@ public class VentaService : IVentaService
                 Cantidad = item.Cantidad,
                 PrecioUnitario = producto.Precio
             });
+
+            // Guarda el nombre del producto para la respuesta.
+            nombresProductos[producto.Id] = producto.Nombre;
 
             // Suma el subtotal al total de la venta.
             total += producto.Precio * item.Cantidad;
@@ -186,7 +177,7 @@ public class VentaService : IVentaService
         var venta = new Venta
         {
             Fecha = DateTime.UtcNow,
-            IdCliente = dto.Id,
+            IdCliente = dto.IdCliente,
             Total = total,
             Detalles = detalles
         };
@@ -194,7 +185,8 @@ public class VentaService : IVentaService
         // Guarda la venta en la base de datos.
         var creada = await _ventaRepository.CrearAsync(venta);
 
-        // Retorna la información de la venta creada.
+        // Retorna la información de la venta creada,
+        // incluyendo el nombre del producto desde el diccionario en memoria.
         return Result<VentaDto>.Ok(new VentaDto
         {
             Id = creada.Id,
@@ -205,6 +197,9 @@ public class VentaService : IVentaService
             Detalles = creada.Detalles.Select(d => new DetalleVentaDto
             {
                 IdProducto = d.IdProducto,
+                NombreProducto = nombresProductos.TryGetValue(d.IdProducto, out var nombre)
+                    ? nombre
+                    : string.Empty,
                 Cantidad = d.Cantidad,
                 PrecioUnitario = d.PrecioUnitario
             }).ToList()
