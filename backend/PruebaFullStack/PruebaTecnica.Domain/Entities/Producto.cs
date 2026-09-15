@@ -38,4 +38,8 @@ public class Producto
     /// Se actualiza conforme se realizan entradas o salidas de stock.
     /// </summary>
     public int Stock { get; set; }
+    /// <summary>
+    /// Detalles de venta donde aparece este producto (relación 1:N).
+    /// </summary>
+    public ICollection<DetalleVenta> Detalles { get; set; } = new List<DetalleVenta>();
 }

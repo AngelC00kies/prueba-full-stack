@@ -26,4 +26,8 @@ public class Cliente
     /// Número telefónico de contacto del cliente.
     /// </summary>
     public string Telefono { get; set; } = string.Empty;
+    /// <summary>
+    /// Ventas realizadas por este cliente (relación 1:N).
+    /// </summary>
+    public ICollection<Venta> Ventas { get; set; } = new List<Venta>();
 }
