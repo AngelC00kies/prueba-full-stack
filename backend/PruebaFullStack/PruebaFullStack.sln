@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PruebaTecnica.Domain", "Pru
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PruebaTecnica.Application", "PruebaTecnica.Application\PruebaTecnica.Application.csproj", "{FBED998E-4B9D-43BB-A647-EE7ABE822332}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PruebaTecnica.Infrastructure", "PruebaTecnica.Infrastructure\PruebaTecnica.Infrastructure.csproj", "{A8E9A379-DE66-44F9-98A0-C0B00800F65F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PruebaTecnica.Infrastructure", "PruebaTecnica.Infrastructure\PruebaTecnica.Infrastructure.csproj", "{A8E9A379-DE66-44F9-98A0-C0B00800F65F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PruebaTecnica.Tests", "PruebaTecnica.Tests\PruebaTecnica.Tests.csproj", "{6FC38F50-9289-4E12-B77B-5FC0ECA1D028}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{A8E9A379-DE66-44F9-98A0-C0B00800F65F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A8E9A379-DE66-44F9-98A0-C0B00800F65F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A8E9A379-DE66-44F9-98A0-C0B00800F65F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FC38F50-9289-4E12-B77B-5FC0ECA1D028}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FC38F50-9289-4E12-B77B-5FC0ECA1D028}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FC38F50-9289-4E12-B77B-5FC0ECA1D028}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FC38F50-9289-4E12-B77B-5FC0ECA1D028}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

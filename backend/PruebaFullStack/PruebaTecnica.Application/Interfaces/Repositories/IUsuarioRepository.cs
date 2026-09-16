@@ -19,7 +19,7 @@ public interface IUsuarioRepository
     /// <returns>
     /// El usuario encontrado o null si no existe.
     /// </returns>
-    Task<Usuario> ObtenerPorUsernameAsync(string username);
+    Task<Usuario?> ObtenerPorUsernameAsync(string username);
 
     /// <summary>
     /// Crea un nuevo usuario en el sistema.
