@@ -11,13 +11,34 @@
       </button>
     </div>
 
-    <div v-if="error" class="alert alert-error">{{ error }}</div>
+    <div v-if="error" class="alert alert-error">
+      <i class="bi bi-exclamation-triangle"></i>
+      {{ error }}
+    </div>
+
+    <!-- 🆕 Buscador -->
+    <div class="search-box" v-if="!store.cargando && store.clientes.length > 0">
+      <i class="bi bi-search"></i>
+      <input
+        v-model="busqueda"
+        type="text"
+        placeholder="Buscar por nombre, email, teléfono o ID..."
+      />
+      <button v-if="busqueda" @click="busqueda = ''" class="clear-btn">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
 
     <Loader v-if="store.cargando" />
 
     <div v-else-if="store.clientes.length === 0" class="empty">
       <i class="bi bi-inbox"></i>
       <p>No hay clientes registrados</p>
+    </div>
+
+    <div v-else-if="clientesFiltrados.length === 0" class="empty">
+      <i class="bi bi-search"></i>
+      <p>No se encontraron clientes para "{{ busqueda }}"</p>
     </div>
 
     <table v-else class="table">
@@ -31,7 +52,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="c in store.clientes" :key="c.id">
+        <tr v-for="c in clientesFiltrados" :key="c.id">
           <td>{{ c.id }}</td>
           <td>{{ c.nombre }}</td>
           <td>{{ c.email }}</td>
@@ -58,15 +79,15 @@
         </h2>
         <form @submit.prevent="guardar">
           <div class="form-group">
-            <label>Nombre</label>
+            <label><i class="bi bi-person"></i> Nombre</label>
             <input v-model="form.nombre" type="text" required maxlength="100" />
           </div>
           <div class="form-group">
-            <label>Email</label>
+            <label><i class="bi bi-envelope"></i> Email</label>
             <input v-model="form.email" type="email" required maxlength="100" />
           </div>
           <div class="form-group">
-            <label>Teléfono</label>
+            <label><i class="bi bi-telephone"></i> Teléfono</label>
             <input v-model="form.telefono" type="text" required maxlength="20" />
           </div>
           <div class="modal-actions">
@@ -86,7 +107,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useClientesStore } from '../store/clientes'
 import Loader from '../components/common/Loader.vue'
 
@@ -95,6 +116,22 @@ const mostrarFormulario = ref(false)
 const editando = ref(null)
 const guardando = ref(false)
 const error = ref('')
+
+// 🆕 Estado del buscador
+const busqueda = ref('')
+
+// 🆕 Lista filtrada con computed
+const clientesFiltrados = computed(() => {
+  const termino = busqueda.value.trim().toLowerCase()
+  if (!termino) return store.clientes
+
+  return store.clientes.filter(c =>
+    c.nombre.toLowerCase().includes(termino) ||
+    c.email.toLowerCase().includes(termino) ||
+    c.telefono.toLowerCase().includes(termino) ||
+    c.id.toString().includes(termino)
+  )
+})
 
 const form = reactive({ nombre: '', email: '', telefono: '' })
 
@@ -164,6 +201,56 @@ async function confirmarEliminar(cliente) {
   font-size: 1.5rem;
 }
 
+/* 🆕 Estilos del buscador */
+.search-box {
+  position: relative;
+  margin-bottom: 1rem;
+  max-width: 400px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 0.6rem 2.5rem 0.6rem 2.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-box > i.bi-search {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.clear-btn {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.clear-btn:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
 .btn-sm {
   padding: 0.25rem 0.5rem;
   font-size: 0.8rem;
@@ -223,10 +310,28 @@ async function confirmarEliminar(cliente) {
   font-size: 1.3rem;
 }
 
+.form-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.form-group label i {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
   margin-top: 1rem;
+}
+
+.alert i {
+  margin-right: 0.4rem;
+  vertical-align: middle;
 }
 </style>

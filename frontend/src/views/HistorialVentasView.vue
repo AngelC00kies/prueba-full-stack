@@ -10,6 +10,19 @@
       {{ store.error }}
     </div>
 
+    <!-- 🆕 Buscador -->
+    <div class="search-box" v-if="!store.cargando && store.ventas.length > 0">
+      <i class="bi bi-search"></i>
+      <input
+        v-model="busqueda"
+        type="text"
+        placeholder="Buscar por cliente, producto o ID..."
+      />
+      <button v-if="busqueda" @click="busqueda = ''" class="clear-btn">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
     <Loader v-if="store.cargando" />
 
     <div v-else-if="store.ventas.length === 0" class="empty">
@@ -17,8 +30,13 @@
       <p>No hay ventas registradas</p>
     </div>
 
+    <div v-else-if="ventasFiltradas.length === 0" class="empty">
+      <i class="bi bi-search"></i>
+      <p>No se encontraron ventas para "{{ busqueda }}"</p>
+    </div>
+
     <div v-else class="ventas-list">
-      <div v-for="v in store.ventas" :key="v.id" class="venta-card">
+      <div v-for="v in ventasFiltradas" :key="v.id" class="venta-card">
         <div class="venta-header">
           <div>
             <h3>
@@ -68,11 +86,28 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useVentasStore } from '../store/ventas'
 import Loader from '../components/common/Loader.vue'
 
 const store = useVentasStore()
+
+// 🆕 Estado del buscador
+const busqueda = ref('')
+
+// 🆕 Lista filtrada con computed
+const ventasFiltradas = computed(() => {
+  const termino = busqueda.value.trim().toLowerCase()
+  if (!termino) return store.ventas
+
+  return store.ventas.filter(v =>
+    v.id.toString().includes(termino) ||
+    v.nombreCliente?.toLowerCase().includes(termino) ||
+    v.detalles.some(d =>
+      d.nombreProducto?.toLowerCase().includes(termino)
+    )
+  )
+})
 
 onMounted(() => store.cargar())
 
@@ -95,6 +130,56 @@ h1 {
 h1 i {
   color: #3b82f6;
   font-size: 1.5rem;
+}
+
+/* 🆕 Estilos del buscador */
+.search-box {
+  position: relative;
+  margin-bottom: 1rem;
+  max-width: 400px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 0.6rem 2.5rem 0.6rem 2.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-box > i.bi-search {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.clear-btn {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.clear-btn:hover {
+  background-color: #f3f4f6;
+  color: #374151;
 }
 
 .ventas-list {

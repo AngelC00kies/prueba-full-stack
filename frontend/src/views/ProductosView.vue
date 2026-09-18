@@ -16,11 +16,29 @@
       {{ error }}
     </div>
 
+    <!-- 🆕 Buscador -->
+    <div class="search-box" v-if="!store.cargando && store.productos.length > 0">
+      <i class="bi bi-search"></i>
+      <input
+        v-model="busqueda"
+        type="text"
+        placeholder="Buscar por nombre, descripción o ID..."
+      />
+      <button v-if="busqueda" @click="busqueda = ''" class="clear-btn">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
     <Loader v-if="store.cargando" />
 
     <div v-else-if="store.productos.length === 0" class="empty">
       <i class="bi bi-inbox"></i>
       <p>No hay productos registrados</p>
+    </div>
+
+    <div v-else-if="productosFiltrados.length === 0" class="empty">
+      <i class="bi bi-search"></i>
+      <p>No se encontraron productos para "{{ busqueda }}"</p>
     </div>
 
     <table v-else class="table">
@@ -35,7 +53,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="p in store.productos" :key="p.id">
+        <tr v-for="p in productosFiltrados" :key="p.id">
           <td>{{ p.id }}</td>
           <td>{{ p.nombre }}</td>
           <td>{{ p.descripcion }}</td>
@@ -69,37 +87,24 @@
         </h2>
         <form @submit.prevent="guardar">
           <div class="form-group">
-            <label>
-              <i class="bi bi-tag"></i>
-              Nombre
-            </label>
+            <label><i class="bi bi-tag"></i> Nombre</label>
             <input v-model="form.nombre" type="text" required maxlength="30" />
           </div>
           <div class="form-group">
-            <label>
-              <i class="bi bi-text-paragraph"></i>
-              Descripción
-            </label>
+            <label><i class="bi bi-text-paragraph"></i> Descripción</label>
             <textarea v-model="form.descripcion" required maxlength="250"></textarea>
           </div>
           <div class="form-group">
-            <label>
-              <i class="bi bi-currency-dollar"></i>
-              Precio
-            </label>
+            <label><i class="bi bi-currency-dollar"></i> Precio</label>
             <input v-model.number="form.precio" type="number" step="0.01" min="0.01" required />
           </div>
           <div class="form-group">
-            <label>
-              <i class="bi bi-boxes"></i>
-              Stock
-            </label>
+            <label><i class="bi bi-boxes"></i> Stock</label>
             <input v-model.number="form.stock" type="number" min="0" required />
           </div>
           <div class="modal-actions">
             <button type="button" class="btn btn-secondary" @click="cerrarFormulario">
-              <i class="bi bi-x-lg"></i>
-              Cancelar
+              <i class="bi bi-x-lg"></i> Cancelar
             </button>
             <button type="submit" class="btn btn-primary" :disabled="guardando">
               <i class="bi" :class="guardando ? 'bi-hourglass-split' : 'bi-check-lg'"></i>
@@ -113,7 +118,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useProductosStore } from '../store/productos'
 import Loader from '../components/common/Loader.vue'
 
@@ -122,6 +127,21 @@ const mostrarFormulario = ref(false)
 const editando = ref(null)
 const guardando = ref(false)
 const error = ref('')
+
+// 🆕 Estado del buscador
+const busqueda = ref('')
+
+// 🆕 Lista filtrada con computed
+const productosFiltrados = computed(() => {
+  const termino = busqueda.value.trim().toLowerCase()
+  if (!termino) return store.productos
+
+  return store.productos.filter(p =>
+    p.nombre.toLowerCase().includes(termino) ||
+    p.descripcion.toLowerCase().includes(termino) ||
+    p.id.toString().includes(termino)
+  )
+})
 
 const form = reactive({
   nombre: '',
@@ -194,6 +214,56 @@ async function confirmarEliminar(producto) {
 .header h1 i {
   color: #3b82f6;
   font-size: 1.5rem;
+}
+
+/* 🆕 Estilos del buscador */
+.search-box {
+  position: relative;
+  margin-bottom: 1rem;
+  max-width: 400px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 0.6rem 2.5rem 0.6rem 2.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-box > i.bi-search {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.clear-btn {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.clear-btn:hover {
+  background-color: #f3f4f6;
+  color: #374151;
 }
 
 .btn-sm {
