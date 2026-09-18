@@ -505,6 +505,7 @@ curl -k -X POST https://localhost:7111/api/auth/register \
 - **Modales dinámicos** para creación/edición.
 - **Manejo de errores** con alertas visuales.
 - **Logout automático** al expirar el token.
+- **Buscador en tiempo real** en las vistas de productos, clientes e historial.
 
 ---
 
